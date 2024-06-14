@@ -81,9 +81,26 @@ def allocate_room(student_id, room_id, start_date, end_date):
 def view_allocation_history():
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM allocations')
-    allocations = cursor.fetchall()
+    cursor.execute('''
+        SELECT students.name AS student_name, rooms.room_number, rooms.capacity
+        FROM allocations
+        JOIN students ON allocations.student_id = students.id
+        JOIN rooms ON allocations.room_id = rooms.id
+    ''')
+    rows = cursor.fetchall()
     conn.close()
+    
+    allocations = []
+    for row in rows:
+        allocation = {
+            'student_name': row[0],
+            'room_number': row[1],
+            'capacity': row[2]
+        }
+        allocations.append(allocation)
+    
     return allocations
+
+
     
 create_tables()

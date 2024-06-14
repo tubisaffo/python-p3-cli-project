@@ -29,7 +29,7 @@ def main():
             booking()
 
         elif choice == "4":
-            view_allocation_history()
+            view_allocations()
 
         elif choice == "5":
             print("Exiting Hostel Management System.")
@@ -42,7 +42,6 @@ def main():
 def student_management():
     print("\nStudent Management:")
     print("1. Register Student")
-    # Removed option 2
 
     choice = input("> ")
 
