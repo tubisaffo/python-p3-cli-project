@@ -3,11 +3,10 @@ from connection import get_db_connection
 def create_tables():
     conn = get_db_connection()
     cursor = conn.cursor()
-
    
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS students (
-            id INT AUTO_INCREMENT PRIMARY KEY,
+            id INTEGER PRIMARY KEY,
             name VARCHAR(255) NOT NULL,
             programme VARCHAR(255) NOT NULL,
             gender VARCHAR(50) NOT NULL,
@@ -18,17 +17,18 @@ def create_tables():
     
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS rooms (
-            id INT AUTO_INCREMENT PRIMARY KEY,
+            id INTEGER PRIMARY KEY,
             room_number VARCHAR(50) NOT NULL,
             capacity INT NOT NULL,
-            occupied BOOLEAN NOT NULL DEFAULT FALSE
+            gender VARCHAR(50) NOT NULL,
+            occupied INT NOT NULL DEFAULT 0
         )
     ''')
 
    
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS allocations (
-            id INT AUTO_INCREMENT PRIMARY KEY,
+            id INTEGER PRIMARY KEY,
             student_id INT,
             room_id INT,
             start_date DATE NOT NULL,
@@ -51,10 +51,20 @@ def add_student(name, programme, gender, email):
     conn.close()
     return student_id
 
-def get_available_rooms():
+def add_room(room_number, capacity, gender):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM rooms WHERE occupied = FALSE')
+    cursor.execute('INSERT INTO rooms (room_number, capacity, gender) VALUES (?,?,?)', 
+                   (room_number, capacity, gender))
+    conn.commit()
+    room_id = cursor.lastrowid
+    conn.close()
+    return room_id
+
+def get_available_rooms(gender=None):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM rooms WHERE occupied = 0')
     rooms = cursor.fetchall()
     conn.close()
     return rooms
@@ -67,5 +77,13 @@ def allocate_room(student_id, room_id, start_date, end_date):
     cursor.execute('UPDATE rooms SET occupied = TRUE WHERE id = ?', (room_id,))
     conn.commit()
     conn.close()
+    
+def view_allocation_history():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM allocations')
+    allocations = cursor.fetchall()
+    conn.close()
+    return allocations
     
 create_tables()
